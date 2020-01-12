@@ -10,7 +10,8 @@ Given the binary nature of the target variable, the analytic task is that of cla
 
 ## Data Understanding
 #### 1. Exploratory Analysis: Meaning of the data
-- The dataset consists of 307,511 individual loans
+The dataset consists of 307,511 individual loans
+
 Data Table | Number of Features
 ------------ | -------------
 application_{train|test}.csv |
