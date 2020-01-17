@@ -23,7 +23,7 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data = pd.read_csv(path,
                        dtype = {
                            'SK_ID_CURR':np.uint32,
-                           'DAYS_EMPLOYED':np.uint32,
+                           'DAYS_EMPLOYED':np.int32,
                            'FLAG_MOBIL':str,
                            'FLAG_EMP_PHONE':str,
                            'FLAG_WORK_PHONE':str,
