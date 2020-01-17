@@ -23,6 +23,7 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data = pd.read_csv(path,
                        dtype = {
                            'SK_ID_CURR':np.uint32,
+                           'DAYS_EMPLOYED':np.uint32
                            'FLAG_MOBIL':str,
                            'FLAG_EMP_PHONE':str,
                            'FLAG_WORK_PHONE':str,
@@ -71,10 +72,9 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
 
     # Invert negations and correct data types
     data.DAYS_BIRTH = (-data.DAYS_BIRTH).astype(np.uint16)
-    data.DAYS_EMPLOYED = (-data.DAYS_EMPLOYED).astype(np.uint32)
     data.DAYS_REGISTRATION = (-data.DAYS_REGISTRATION).astype(np.uint16)
     data.DAYS_ID_PUBLISH = (-data.DAYS_ID_PUBLISH).astype(np.uint16)
-    data.DAYS_LAST_PHONE_CHANGE = (-data.DAYS_LAST_PHONE_CHANGE)
+    data.DAYS_LAST_PHONE_CHANGE = (-data.DAYS_LAST_PHONE_CHANGE).astype(np.uint16)
 
     # Recode 0 / 1 to N / Y
     data.FLAG_MOBIL.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
