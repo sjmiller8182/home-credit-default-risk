@@ -74,7 +74,7 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.DAYS_BIRTH = (-data.DAYS_BIRTH).astype(np.uint16)
     data.DAYS_REGISTRATION = (-data.DAYS_REGISTRATION).astype(np.uint16)
     data.DAYS_ID_PUBLISH = (-data.DAYS_ID_PUBLISH).astype(np.uint16)
-    data.DAYS_LAST_PHONE_CHANGE = (-data.DAYS_LAST_PHONE_CHANGE).astype(np.uint16)
+    data.DAYS_LAST_PHONE_CHANGE = (-data.DAYS_LAST_PHONE_CHANGE)
 
     # Recode 0 / 1 to N / Y
     data.FLAG_MOBIL.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
