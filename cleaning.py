@@ -123,9 +123,9 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.DAYS_LAST_PHONE_CHANGE = (-data.DAYS_LAST_PHONE_CHANGE)
     
     # Create an encoding for DAYS_EMPLOYED
-    data['EMPLOYED'] = df.DAYS_EMPLOYED.apply(encode_days_employed)
+    data['EMPLOYED'] = data.DAYS_EMPLOYED.apply(encode_days_employed)
     # Set the large values in daye emplyed to 0, negate all, and retype
-    data['DAYS_EMPLOYED'] = (-df.DAYS_EMPLOYED.apply(pos_to_zero)).astype(np.uint16)
+    data['DAYS_EMPLOYED'] = (-data.DAYS_EMPLOYED.apply(pos_to_zero)).astype(np.uint16)
     
     # create existance encoding for EXT source columns
     data['EXT_SOURCE_1_AV'] = data.EXT_SOURCE_1.apply(encode_available)
@@ -250,6 +250,8 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.AMT_REQ_CREDIT_BUREAU_MON.fillna(0, inplace = True)
     data.AMT_REQ_CREDIT_BUREAU_QRT.fillna(0, inplace = True)
     data.AMT_REQ_CREDIT_BUREAU_YEAR.fillna(0, inplace = True)
+    
+    # TODO remaining imputions here
     
     return data
 
