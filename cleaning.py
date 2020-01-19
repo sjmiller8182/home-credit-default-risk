@@ -11,9 +11,9 @@ def encode_days_employed(days: float) -> str:
     The values of 365E3 will be encoded as 'N', all others will be encoded as 'Y'.
     """
     if days > 200000:
-        return 'N'
+        return '0'
     else:
-        return 'Y'
+        return '1'
 
 def pos_to_zero(value: float) -> float:
     """Return 0 for positive numbers, else the number
@@ -22,7 +22,17 @@ def pos_to_zero(value: float) -> float:
         return 0
     else:
         return value
-    
+
+def encode_available(value: float) -> float:
+    """Encode if values are available (np.nan)
+    """
+    # value exists
+    if np.isnan(value):
+        return '0'
+    # value does not exist
+    else:
+        return '1'
+
 def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     """Reads data and cleans the data set
     
@@ -116,6 +126,16 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data['EMPLOYED'] = df.DAYS_EMPLOYED.apply(encode_days_employed)
     # Set the large values in daye emplyed to 0, negate all, and retype
     data['DAYS_EMPLOYED'] = (-df.DAYS_EMPLOYED.apply(pos_to_zero)).astype(np.uint16)
+    
+    # create existance encoding for EXT source columns
+    data['EXT_SOURCE_1_AV'] = data.EXT_SOURCE_1.apply(encode_available)
+    data['EXT_SOURCE_2_AV'] = data.EXT_SOURCE_2.apply(encode_available)
+    data['EXT_SOURCE_3_AV'] = data.EXT_SOURCE_3.apply(encode_available)
+    
+    # fill nas in EXT_SOURCE_* with 0
+    data.EXT_SOURCE_1.fillna(0, inplace = True)
+    data.EXT_SOURCE_2.fillna(0, inplace = True)
+    data.EXT_SOURCE_3.fillna(0, inplace = True)
     
     # Recode 0 / 1 to N / Y
     data.FLAG_MOBIL.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
@@ -222,6 +242,15 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data['ANNUITY_INCOME_RATIO'] = data.AMT_ANNUITY / data.AMT_INCOME_TOTAL
     data['PERCENT_EMPLOYED_TO_AGE'] = data.DAYS_EMPLOYED / data.DAYS_BIRTH
 
+    # imputions
+    # we will treat missing credit enquiries as no enquiry has occured
+    data.AMT_REQ_CREDIT_BUREAU_HOUR.fillna(0, inplace = True)
+    data.AMT_REQ_CREDIT_BUREAU_DAY.fillna(0, inplace = True)
+    data.AMT_REQ_CREDIT_BUREAU_WEEK.fillna(0, inplace = True)
+    data.AMT_REQ_CREDIT_BUREAU_MON.fillna(0, inplace = True)
+    data.AMT_REQ_CREDIT_BUREAU_QRT.fillna(0, inplace = True)
+    data.AMT_REQ_CREDIT_BUREAU_YEAR.fillna(0, inplace = True)
+    
     return data
 
 
