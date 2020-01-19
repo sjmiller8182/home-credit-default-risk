@@ -89,12 +89,12 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
                            'FLAG_DOCUMENT_19':str,
                            'FLAG_DOCUMENT_20':str,
                            'FLAG_DOCUMENT_21':str,
-                           'AMT_REQ_CREDIT_BUREAU_HOUR':str,
-                           'AMT_REQ_CREDIT_BUREAU_DAY':str,
-                           'AMT_REQ_CREDIT_BUREAU_WEEK':str,
-                           'AMT_REQ_CREDIT_BUREAU_MON':str,
-                           'AMT_REQ_CREDIT_BUREAU_QRT':str,
-                           'AMT_REQ_CREDIT_BUREAU_YEAR':str
+                           'AMT_REQ_CREDIT_BUREAU_HOUR':np.float64,
+                           'AMT_REQ_CREDIT_BUREAU_DAY':np.float64,
+                           'AMT_REQ_CREDIT_BUREAU_WEEK':np.float64,
+                           'AMT_REQ_CREDIT_BUREAU_MON':np.float64,
+                           'AMT_REQ_CREDIT_BUREAU_QRT':np.float64,
+                           'AMT_REQ_CREDIT_BUREAU_YEAR':np.float64
                        },
                        na_values = ['XNA'])
 
@@ -202,6 +202,9 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.REG_CITY_NOT_WORK_CITY = data.REG_CITY_NOT_WORK_CITY.astype('category')
     data.LIVE_CITY_NOT_WORK_CITY = data.LIVE_CITY_NOT_WORK_CITY.astype('category')
 
+    # set ORGANIZATION_TYPE NAs to 'None' (not associated employer) and make categorical
+    data.ORGANIZATION_TYPE = data.ORGANIZATION_TYPE.fillna('None').astype('category')
+    
     data.FLAG_DOCUMENT_2 = data.FLAG_DOCUMENT_2.astype('category')
     data.FLAG_DOCUMENT_3 = data.FLAG_DOCUMENT_3.astype('category')
     data.FLAG_DOCUMENT_4 = data.FLAG_DOCUMENT_4.astype('category')
@@ -223,6 +226,14 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.FLAG_DOCUMENT_20 = data.FLAG_DOCUMENT_20.astype('category')
     data.FLAG_DOCUMENT_21 = data.FLAG_DOCUMENT_21.astype('category')
 
+    # we will treat missing credit enquiries as no enquiry has occured
+    data.AMT_REQ_CREDIT_BUREAU_HOUR =data.AMT_REQ_CREDIT_BUREAU_HOUR.fillna(0).astype(np.uint16)
+    data.AMT_REQ_CREDIT_BUREAU_DAY = data.AMT_REQ_CREDIT_BUREAU_DAY.fillna(0).astype(np.uint16)
+    data.AMT_REQ_CREDIT_BUREAU_WEEK = data.AMT_REQ_CREDIT_BUREAU_WEEK.fillna(0).astype(np.uint16)
+    data.AMT_REQ_CREDIT_BUREAU_MON = data.AMT_REQ_CREDIT_BUREAU_MON.fillna(0).astype(np.uint16)
+    data.AMT_REQ_CREDIT_BUREAU_QRT = data.AMT_REQ_CREDIT_BUREAU_QRT.fillna(0).astype(np.uint16)
+    data.AMT_REQ_CREDIT_BUREAU_YEAR = data.AMT_REQ_CREDIT_BUREAU_YEAR.fillna(0).astype(np.uint16)
+    
     data.AMT_REQ_CREDIT_BUREAU_HOUR = data.AMT_REQ_CREDIT_BUREAU_HOUR.astype('category')
     data.AMT_REQ_CREDIT_BUREAU_DAY = data.AMT_REQ_CREDIT_BUREAU_DAY.astype('category')
     data.AMT_REQ_CREDIT_BUREAU_WEEK = data.AMT_REQ_CREDIT_BUREAU_WEEK.astype('category')
@@ -241,15 +252,9 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data['CREDIT_INCOME_RATIO'] = data.AMT_CREDIT / data.AMT_INCOME_TOTAL
     data['ANNUITY_INCOME_RATIO'] = data.AMT_ANNUITY / data.AMT_INCOME_TOTAL
     data['PERCENT_EMPLOYED_TO_AGE'] = data.DAYS_EMPLOYED / data.DAYS_BIRTH
-
-    # imputions
-    # we will treat missing credit enquiries as no enquiry has occured
-    data.AMT_REQ_CREDIT_BUREAU_HOUR.fillna(0, inplace = True)
-    data.AMT_REQ_CREDIT_BUREAU_DAY.fillna(0, inplace = True)
-    data.AMT_REQ_CREDIT_BUREAU_WEEK.fillna(0, inplace = True)
-    data.AMT_REQ_CREDIT_BUREAU_MON.fillna(0, inplace = True)
-    data.AMT_REQ_CREDIT_BUREAU_QRT.fillna(0, inplace = True)
-    data.AMT_REQ_CREDIT_BUREAU_YEAR.fillna(0, inplace = True)
+    
+    # just set the NAs in OWN_CAR_AGE to 0 because it will be used as an interaction only
+    data.OWN_CAR_AGE = data.OWN_CAR_AGE.fillna(0)
     
     # TODO remaining imputions here
     
