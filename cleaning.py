@@ -9,12 +9,17 @@ from pandas import DataFrame
 def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     """Reads data and cleans the data set
     
-    Steps
+    Cleaning Steps
       * Read csv with Pandas (setting correct data types)
-      * Cleaning
-        * Recode NA values that are not listed as `np.nan`
+      * Drop columns that will not be used
+      * Recode NA values that are not listed as `np.nan`
       * Formattings
-        * Encode categorical variables
+      * Encode categorical variables
+      * Create new features
+    
+    Inputs
+        path: str
+        Path to the data files
     Returns 
         DataFrame with cleaned data
     """
@@ -66,9 +71,16 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
                        },
                        na_values = ['XNA'])
 
-    # fix NAs that are not coded as np.nan
-    #data.CODE_GENDER.replace('XNA', np.nan, inplace = True)
-    #data.ORGANIZATION_TYPE.replace('XNA', np.nan, inplace = True)
+    # define columns to drop
+    drop_columns = ['APARTMENTS_AVG', 'BASEMENTAREA_AVG', 'YEARS_BEGINEXPLUATATION_AVG', 'YEARS_BUILD_AVG', 'COMMONAREA_AVG', 'ELEVATORS_AVG','ENTRANCES_AVG',
+                    'FLOORSMAX_AVG', 'FLOORSMIN_AVG', 'LANDAREA_AVG', 'LIVINGAPARTMENTS_AVG', 'LIVINGAREA_AVG', 'NONLIVINGAPARTMENTS_AVG', 'NONLIVINGAREA_AVG',
+                    'APARTMENTS_MODE', 'BASEMENTAREA_MODE', 'YEARS_BEGINEXPLUATATION_MODE', 'YEARS_BUILD_MODE', 'COMMONAREA_MODE', 'ELEVATORS_MODE', 'ENTRANCES_MODE',
+                    'FLOORSMAX_MODE', 'FLOORSMIN_MODE', 'LANDAREA_MODE', 'LIVINGAPARTMENTS_MODE', 'LIVINGAREA_MODE', 'NONLIVINGAPARTMENTS_MODE', 'NONLIVINGAREA_MODE', 
+                    'APARTMENTS_MEDI', 'BASEMENTAREA_MEDI', 'YEARS_BEGINEXPLUATATION_MEDI', 'YEARS_BUILD_MEDI', 'COMMONAREA_MEDI', 'ELEVATORS_MEDI', 'ENTRANCES_MEDI', 
+                    'FLOORSMAX_MEDI', 'FLOORSMIN_MEDI', 'LANDAREA_MEDI', 'LIVINGAPARTMENTS_MEDI', 'LIVINGAREA_MEDI', 'NONLIVINGAPARTMENTS_MEDI', 'NONLIVINGAREA_MEDI', 
+                    'FONDKAPREMONT_MODE', 'HOUSETYPE_MODE', 'TOTALAREA_MODE', 'WALLSMATERIAL_MODE', 'EMERGENCYSTATE_MODE']
+    # drop them
+    data.drop(labels = drop_columns, axis = 1, inplace = True)
 
     # Invert negations and correct data types
     data.DAYS_BIRTH = (-data.DAYS_BIRTH).astype(np.uint16)
@@ -175,6 +187,12 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.REGION_RATING_CLIENT = data.REGION_RATING_CLIENT.astype('category').cat.reorder_categories([1, 2, 3])
     data.REGION_RATING_CLIENT_W_CITY = data.REGION_RATING_CLIENT_W_CITY.astype('category').cat.reorder_categories([1, 2, 3])
     
+    
+    # create new features
+    data['CREDIT_INCOME_RATIO'] = data.AMT_CREDIT / data.AMT_INCOME_TOTAL
+    data['ANNUITY_INCOME_RATIO'] = data.AMT_ANNUITY / data.AMT_INCOME_TOTAL
+    data['PERCENT_EMPLOYED_TO_AGE'] = data.DAYS_EMPLOYED / data.DAYS_BIRTH
+
     return data
 
 
