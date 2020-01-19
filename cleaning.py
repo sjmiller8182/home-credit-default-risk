@@ -6,6 +6,23 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
+def encode_days_employed(days: float) -> str:
+    """Encode an Employed column based on DAYS_EMPLOYED
+    The values of 365E3 will be encoded as 'N', all others will be encoded as 'Y'.
+    """
+    if days > 200000:
+        return 'N'
+    else:
+        return 'Y'
+
+def pos_to_zero(value: float) -> float:
+    """Return 0 for positive numbers, else the number
+    """
+    if value >= 0.0:
+        return 0
+    else:
+        return value
+    
 def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     """Reads data and cleans the data set
     
@@ -87,7 +104,12 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.DAYS_REGISTRATION = (-data.DAYS_REGISTRATION).astype(np.uint16)
     data.DAYS_ID_PUBLISH = (-data.DAYS_ID_PUBLISH).astype(np.uint16)
     data.DAYS_LAST_PHONE_CHANGE = (-data.DAYS_LAST_PHONE_CHANGE)
-
+    
+    # Create an encoding for DAYS_EMPLOYED
+    data['EMPLOYED'] = df.DAYS_EMPLOYED.apply(encode_days_employed)
+    # Set the large values in daye emplyed to 0, negate all, and retype
+    data['DAYS_EMPLOYED'] = (-df.DAYS_EMPLOYED.apply(pos_to_zero)).astype(np.uint16)
+    
     # Recode 0 / 1 to N / Y
     data.FLAG_MOBIL.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
     data.FLAG_EMP_PHONE.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
