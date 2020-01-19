@@ -190,7 +190,6 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.FLAG_CONT_MOBILE = data.FLAG_CONT_MOBILE.astype('category')
     data.FLAG_PHONE = data.FLAG_PHONE.astype('category')
     data.FLAG_EMAIL = data.FLAG_EMAIL.astype('category')
-    data.OCCUPATION_TYPE = data.OCCUPATION_TYPE.astype('category')
     data.WEEKDAY_APPR_PROCESS_START = data.WEEKDAY_APPR_PROCESS_START.astype('category')
 
     data.HOUR_APPR_PROCESS_START = data.HOUR_APPR_PROCESS_START.astype('category')
@@ -204,6 +203,9 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
 
     # set ORGANIZATION_TYPE NAs to 'None' (not associated employer) and make categorical
     data.ORGANIZATION_TYPE = data.ORGANIZATION_TYPE.fillna('None').astype('category')
+    
+    # set missing values in OCCUPATION_TYPE to unknown as it wasn't provided by the client
+    data.OCCUPATION_TYPE = data.OCCUPATION_TYPE.fillna('Unknown').astype('category')
     
     data.FLAG_DOCUMENT_2 = data.FLAG_DOCUMENT_2.astype('category')
     data.FLAG_DOCUMENT_3 = data.FLAG_DOCUMENT_3.astype('category')
@@ -246,13 +248,12 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
                                                                                             15., 16., 20.])
     data.REGION_RATING_CLIENT = data.REGION_RATING_CLIENT.astype('category').cat.reorder_categories([1, 2, 3])
     data.REGION_RATING_CLIENT_W_CITY = data.REGION_RATING_CLIENT_W_CITY.astype('category').cat.reorder_categories([1, 2, 3])
-    
-    
+
     # create new features
     data['CREDIT_INCOME_RATIO'] = data.AMT_CREDIT / data.AMT_INCOME_TOTAL
     data['ANNUITY_INCOME_RATIO'] = data.AMT_ANNUITY / data.AMT_INCOME_TOTAL
     data['PERCENT_EMPLOYED_TO_AGE'] = data.DAYS_EMPLOYED / data.DAYS_BIRTH
-    
+
     # just set the NAs in OWN_CAR_AGE to 0 because it will be used as an interaction only
     data.OWN_CAR_AGE = data.OWN_CAR_AGE.fillna(0)
     
