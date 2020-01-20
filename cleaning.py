@@ -368,9 +368,9 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
 
 # define a function that merges newFeatures with application data
 def merge_newFeatures(df: DataFrame) -> DataFrame:
-    
+    global newFeatures
     df = df.merge(newFeatures, on = 'SK_ID_CURR', how = 'left')
-    df.fillna(0)
+    df = df.fillna(0)
     
     return df
 
