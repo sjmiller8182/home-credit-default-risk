@@ -278,3 +278,108 @@ def missing_values_table(df: DataFrame) -> DataFrame:
         "There are " + str(mis_val_table_ren_columns.shape[0]) +
             " columns that have missing values.")
     return mis_val_table_ren_columns
+
+# define a function to load features from bureau table
+def load_bureau(path: str = './bureau.csv') -> DataFrame:
+    """creates LOAN_COUNT, CREDIT_ACTIVE, CREDIT_DAY_OVERDUE, AMT_CREDIT_SUM, AMT_CREDIT_SUM_DEBT,
+               AMT_CREDIT_SUM_LIMIT, AMT_CREDIT_SUM_OVERDUE
+    """
+    bureau = pd.read_csv(path, 
+                         dtype = {
+                             'SK_ID_CURR': np.uint32,
+                             'SK_BUREAU_ID': np.uint32,
+                             'CREDIT_ACTIVE': str,
+                             'CREDIT_CURRENCY': str,
+                             'DAYS_CREDIT': np.int32,
+                             'CREDIT_DAY_OVERDUE': np.int32,
+                             'DAYS_CREDIT_ENDDATE': np.float64,
+                             'DAYS_ENDDATE_FACT': np.float64,
+                             'AMT_CREDIT_MAX_OVERDUE': np.float64,
+                             'CNT_CREDIT_PROLONG': np.int32,
+                             'AMT_CREDIT_SUM': np.float64,
+                             'AMT_CREDIT_SUM_DEBT': np.float64,
+                             'AMT_CREDIT_SUM_LIMIT': np.float64,
+                             'AMT_CREDIT_SUM_OVERDUE': np.float64,
+                             'CREDIT_TYPE': str,
+                             'DAYS_CREDIT_UPDATE': np.int32,
+                             'AMT_ANNUITY': np.float64
+                         })
+    numerics = ['DAYS_CREDIT',
+                'CREDIT_DAY_OVERDUE',
+                'DAYS_CREDIT_ENDDATE',
+                'DAYS_ENDDATE_FACT',
+                'AMT_CREDIT_MAX_OVERDUE',
+                'CNT_CREDIT_PROLONG',
+                'AMT_CREDIT_SUM',
+                'AMT_CREDIT_SUM_DEBT',
+                'AMT_CREDIT_SUM_LIMIT',
+                'AMT_CREDIT_SUM_OVERDUE',
+                'DAYS_CREDIT_UPDATE',
+                'AMT_ANNUITY'
+               ]
+    # fill all missing data with 0
+    bureau[numerics] = bureau[numerics].fillna(0)
+    
+    return bureau
+
+# define function that creates newFeatures dataframe from bureau
+def create_newFeatures(bureau: DataFrame) -> DataFrame:
+    #number of loans per applicant
+        # start with grouping by applicant ID and counting list length
+    loanCounts = bureau.groupby('SK_ID_CURR').count()
+    #take just the credit bureau counts
+    loanCounts.drop(labels = ['CREDIT_ACTIVE', 'CREDIT_CURRENCY',
+       'DAYS_CREDIT', 'CREDIT_DAY_OVERDUE', 'DAYS_CREDIT_ENDDATE',
+       'DAYS_ENDDATE_FACT', 'AMT_CREDIT_MAX_OVERDUE', 'CNT_CREDIT_PROLONG',
+       'AMT_CREDIT_SUM', 'AMT_CREDIT_SUM_DEBT', 'AMT_CREDIT_SUM_LIMIT',
+       'AMT_CREDIT_SUM_OVERDUE', 'CREDIT_TYPE', 'DAYS_CREDIT_UPDATE',
+       'AMT_ANNUITY'], axis = 1, inplace = True)
+    # rename column of interest
+    loanCounts.rename(columns = {'SK_ID_BUREAU':'LOAN_COUNT'})
+    
+    # count number of active credit accounts, create boolean list
+    active = bureau['CREDIT_ACTIVE'] == 'Active'
+    # use boolean list to filter bureau
+    activeAccounts = bureau[active]
+    # collect number of active accounts per applicant
+    active_accounts = activeAccounts.groupby('SK_ID_CURR').count()
+    # isolate the count of active accounts
+    active_accounts.drop(labels = ['SK_ID_BUREAU', 'CREDIT_CURRENCY',
+       'DAYS_CREDIT', 'CREDIT_DAY_OVERDUE', 'DAYS_CREDIT_ENDDATE',
+       'DAYS_ENDDATE_FACT', 'AMT_CREDIT_MAX_OVERDUE', 'CNT_CREDIT_PROLONG',
+       'AMT_CREDIT_SUM', 'AMT_CREDIT_SUM_DEBT', 'AMT_CREDIT_SUM_LIMIT',
+       'AMT_CREDIT_SUM_OVERDUE', 'CREDIT_TYPE', 'DAYS_CREDIT_UPDATE',
+       'AMT_ANNUITY'], axis = 1, inplace = True)
+    # merging data
+    newFeatures = loanCounts.merge(active_accounts, on = 'SK_ID_CURR', how = 'left') 
+    
+    # collect important sums for active credit accounts only   
+    sums = activeAccounts.groupby('SK_ID_CURR').sum()
+    # drop columns that aren't useful
+    sums.drop(labels = ['SK_ID_BUREAU', 'DAYS_CREDIT_ENDDATE','DAYS_ENDDATE_FACT','DAYS_CREDIT',
+                      'CNT_CREDIT_PROLONG','AMT_ANNUITY', 'AMT_CREDIT_MAX_OVERDUE', 'DAYS_CREDIT_UPDATE'],
+             axis = 1, inplace = True)
+    #merging data
+    newFeatures = newFeatures.merge(sums, on = 'SK_ID_CURR', how = 'left')
+    # filling any NaNs created
+    newFeatures.fillna(0)
+    
+    return newFeatures
+
+# define a function that merges newFeatures with application data
+def merge_newFeatures(df: DataFrame) -> DataFrame:
+    
+    df.merge(newFeatures, on = 'SK_ID_CURR', how = 'left')
+    df.fillna(0)
+    
+    return data
+
+    
+    
+    
+    
+    
+    
+    
+
+    
