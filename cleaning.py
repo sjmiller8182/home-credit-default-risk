@@ -2,14 +2,8 @@
 Utilities for cleaning the data
 """
 
-from typing import List, Union
-
 import numpy as np
-from scipy.stats import mode
 import pandas as pd
-
-from numpy import ndarray
-from pandas import Series
 from pandas import DataFrame
 
 def encode_days_employed(days: float) -> str:
@@ -39,17 +33,6 @@ def encode_available(value: float) -> float:
     else:
         return '1'
 
-def get_complete_columns(data: DataFrame) -> List[str]:
-    """Get a list of columns without np.nan elements (complete columns)
-    """
-    return list(data.columns[~data.isnull().any()])
-    
-def get_mode(data_series: Union[ndarray, Series]) -> Union[str, int]:
-    """ Get mode from a series of data
-    """
-    modal, _ = mode(data_series)
-    return modal[0]
-    
 def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     """Reads data and cleans the data set
     
@@ -190,20 +173,13 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.FLAG_DOCUMENT_21.replace(to_replace = {'0':'N','1':'Y'}, inplace = True)
 
     # convert nominal / ordinal variables to categories
-
-    # impute CODE_GENDER with the mode
-    data.CODE_GENDER = data.CODE_GENDER.fillna(get_mode(data.CODE_GENDER.dropna()))
     data.CODE_GENDER = data.CODE_GENDER.astype('category')
-
     data.NAME_CONTRACT_TYPE = data.NAME_CONTRACT_TYPE.astype('category')
     data.FLAG_OWN_CAR = data.FLAG_OWN_CAR.astype('category')
     data.FLAG_OWN_REALTY = data.FLAG_OWN_REALTY.astype('category')
     data.CNT_CHILDREN = data.CNT_CHILDREN.astype('category').cat.reorder_categories([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
                                                                                     12, 14, 19])
-    # impute NAME_TYPE_SUITE with the mode
-    data.NAME_TYPE_SUITE = data.NAME_TYPE_SUITE.fillna(get_mode(data.NAME_TYPE_SUITE.dropna()))
     data.NAME_TYPE_SUITE = data.NAME_TYPE_SUITE.astype('category')
-    
     data.NAME_INCOME_TYPE = data.NAME_INCOME_TYPE.astype('category')
     data.NAME_EDUCATION_TYPE = data.NAME_EDUCATION_TYPE.astype('category')
     data.NAME_FAMILY_STATUS = data.NAME_FAMILY_STATUS.astype('category')
@@ -267,8 +243,6 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.AMT_REQ_CREDIT_BUREAU_QRT = data.AMT_REQ_CREDIT_BUREAU_QRT.astype('category')
     data.AMT_REQ_CREDIT_BUREAU_YEAR = data.AMT_REQ_CREDIT_BUREAU_YEAR.astype('category')
 
-    # impute CNT_FAM_MEMBERS with the mode
-    data.CNT_FAM_MEMBERS = data.CNT_FAM_MEMBERS.fillna(get_mode(data.CNT_FAM_MEMBERS.dropna()))
     data.CNT_FAM_MEMBERS = data.CNT_FAM_MEMBERS.astype('category').cat.reorder_categories([ 1.,  2.,  3.,  4.,  5.,  6., 7.,
                                                                                             8.,  9., 10., 11., 12., 13., 14.,
                                                                                             15., 16., 20.])
@@ -284,15 +258,7 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.OWN_CAR_AGE = data.OWN_CAR_AGE.fillna(0)
     
     # TODO remaining imputions here
-    data.OBS_30_CNT_SOCIAL_CIRCLE = data.OBS_30_CNT_SOCIAL_CIRCLE.fillna(np.median(data.OBS_30_CNT_SOCIAL_CIRCLE.dropna()))
-    data.DEF_30_CNT_SOCIAL_CIRCLE = data.DEF_30_CNT_SOCIAL_CIRCLE.fillna(np.median(data.DEF_30_CNT_SOCIAL_CIRCLE.dropna()))
-    data.OBS_60_CNT_SOCIAL_CIRCLE = data.OBS_60_CNT_SOCIAL_CIRCLE.fillna(np.median(data.OBS_60_CNT_SOCIAL_CIRCLE.dropna()))
-    data.DEF_60_CNT_SOCIAL_CIRCLE = data.DEF_60_CNT_SOCIAL_CIRCLE.fillna(np.median(data.DEF_60_CNT_SOCIAL_CIRCLE.dropna()))
-    data.AMT_GOODS_PRICE = data.AMT_GOODS_PRICE.fillna(np.median(data.AMT_GOODS_PRICE.dropna()))
-    data.AMT_ANNUITY = data.AMT_ANNUITY.fillna(np.median(data.AMT_ANNUITY.dropna()))
-    data.ANNUITY_INCOME_RATIO = data.ANNUITY_INCOME_RATIO.fillna(np.median(data.ANNUITY_INCOME_RATIO.dropna()))
-    data.DAYS_LAST_PHONE_CHANGE = data.DAYS_LAST_PHONE_CHANGE.fillna(np.median(data.DAYS_LAST_PHONE_CHANGE.dropna()))
-
+    
     return data
 
 
@@ -369,7 +335,7 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
        'AMT_CREDIT_SUM_OVERDUE', 'CREDIT_TYPE', 'DAYS_CREDIT_UPDATE',
        'AMT_ANNUITY'], axis = 1, inplace = True)
     # rename column of interest
-    loanCounts.rename(columns = {'SK_ID_BUREAU':'LOAN_COUNT'})
+    loanCounts = loanCounts.rename(columns = {'SK_ID_BUREAU':'LOAN_COUNT'})
     
     # count number of active credit accounts, create boolean list
     active = bureau['CREDIT_ACTIVE'] == 'Active'
@@ -396,17 +362,17 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
     #merging data
     newFeatures = newFeatures.merge(sums, on = 'SK_ID_CURR', how = 'left')
     # filling any NaNs created
-    newFeatures.fillna(0)
+    newFeatures = newFeatures.fillna(0)
     
     return newFeatures
 
 # define a function that merges newFeatures with application data
 def merge_newFeatures(df: DataFrame) -> DataFrame:
     
-    df.merge(newFeatures, on = 'SK_ID_CURR', how = 'left')
+    df = df.merge(newFeatures, on = 'SK_ID_CURR', how = 'left')
     df.fillna(0)
     
-    return data
+    return df
 
     
     
