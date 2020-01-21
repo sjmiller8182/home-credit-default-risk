@@ -396,7 +396,7 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
     #merging data
     newFeatures = newFeatures.merge(sums, on = 'SK_ID_CURR', how = 'left')
     # filling any NaNs created
-    newFeatures = newFeatures.fillna(0)
+    #newFeatures = newFeatures.fillna(0)
     
     return newFeatures
 
@@ -404,7 +404,7 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
 def merge_newFeatures(df: DataFrame) -> DataFrame:
     global newFeatures
     df = df.merge(newFeatures, on = 'SK_ID_CURR', how = 'left')
-    df = df.fillna(0)
+    #df = df.fillna(0)
     
     return df
 
