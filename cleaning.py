@@ -244,7 +244,7 @@ def read_clean_data(path: str = './application_train.csv') -> DataFrame:
     data.ORGANIZATION_TYPE = data.ORGANIZATION_TYPE.fillna('None').astype('category')
     
     # set missing values in OCCUPATION_TYPE to unknown as it wasn't provided by the client
-    data.OCCUPATION_TYPE = data.OCCUPATION_TYPE.fillna('Unknown').astype('category')
+    data.OCCUPATION_TYPE = data.apply(fill_occupation_type, axis = 1).astype('category')
     
     data.FLAG_DOCUMENT_2 = data.FLAG_DOCUMENT_2.astype('category')
     data.FLAG_DOCUMENT_3 = data.FLAG_DOCUMENT_3.astype('category')
