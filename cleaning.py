@@ -12,6 +12,21 @@ from numpy import ndarray
 from pandas import Series
 from pandas import DataFrame
 
+def fill_occupation_type(df: DataFrame) -> Series:
+    """Fill NAs in occupation type
+    * If NAME_INCOME_TYPE == "Unemployed", fill OCCUPATION_TYPE with "None"
+    * If NAME_INCOME_TYPE == "Pensioner" and OCCUPATION_TYPE is NA (not str), fill OCCUPATION_TYPE with "Pensioner"
+    * Else fill with Unknown
+    """
+    if df['NAME_INCOME_TYPE'] == "Unemployed":
+        return "None"
+    elif (df['NAME_INCOME_TYPE'] == "Pensioner") and not isinstance(df['OCCUPATION_TYPE'], str):
+        return "Pensioner"
+    elif (not isinstance(df['OCCUPATION_TYPE'], str)):
+        return "Unknown"
+    else:
+        return df['OCCUPATION_TYPE']
+
 def encode_days_employed(days: float) -> str:
     """Encode an Employed column based on DAYS_EMPLOYED
     The values of 365E3 will be encoded as 'N', all others will be encoded as 'Y'.
