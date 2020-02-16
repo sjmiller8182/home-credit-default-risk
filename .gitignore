@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+*.zip
+data.csv
+crisps-dm2.png
+bureau.csv
+application_train.csv
+application_test.csv
+.DS_Store
+home-credit-default-risk/newFeatures.csv
