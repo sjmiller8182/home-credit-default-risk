@@ -64,6 +64,39 @@ def get_mode(data_series: Union[ndarray, Series]) -> Union[str, int]:
     """
     modal, _ = mode(data_series)
     return modal[0]
+
+# reducing the child count feature to 3 categories
+def cnt_child(series):
+    if series == 0 :
+        return 'No Children'
+    elif 1 <= series < 5 :
+        return '1-4 Children'
+    else :
+        return '5 or More Children'
+    
+# reducing family count feature to 4 categories    
+def cnt_family(series):
+    if series == 1:
+        return '1 Family Member'
+    elif series == 2: 
+        return '2 Family Members'
+    elif 3 >= series <= 5:
+        return '3 - -5 Family Members'
+    else :
+        return '6 or more Family Members'
+    
+# reducing engineered feature LOAN_COUNT to 5 categories
+def loan_count(series):
+    if series == 0:
+        return 'No Loans'
+    elif 1 <= series <= 2:
+        return '1-2 Loans'
+    elif 3 <= series <= 5:
+        return '3-5 Loans'
+    elif 6 <= series <= 10:
+        return '6-10 Loans'
+    else : 
+        return ' > 10 Loans'
     
 def read_clean_data(path: str = './application_train.csv', preimpute: bool = True) -> DataFrame:
     """Reads data and cleans the data set
@@ -98,9 +131,9 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
                            'AMT_REQ_CREDIT_BUREAU_WEEK':np.float64,
                            'AMT_REQ_CREDIT_BUREAU_MON':np.float64,
                            'AMT_REQ_CREDIT_BUREAU_QRT':np.float64,
-                           'AMT_REQ_CREDIT_BUREAU_YEAR':np.float64
-                       },
-                       na_values = ['XNA'])
+                           'AMT_REQ_CREDIT_BUREAU_YEAR':np.float64,
+                                                  },
+                          na_values = ['XNA'])
 
     # define columns to drop
     drop_columns = ['APARTMENTS_AVG', 'BASEMENTAREA_AVG', 'YEARS_BEGINEXPLUATATION_AVG', 'YEARS_BUILD_AVG',
@@ -132,49 +165,19 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
     data['DAYS_EMPLOYED'] = (-data.DAYS_EMPLOYED.apply(pos_to_zero)).astype(np.uint16)
     
     # create existance encoding for EXT source columns
-    data['EXT_SOURCE_1_AV'] = data.EXT_SOURCE_1.apply(encode_available)
-    data['EXT_SOURCE_2_AV'] = data.EXT_SOURCE_2.apply(encode_available)
-    data['EXT_SOURCE_3_AV'] = data.EXT_SOURCE_3.apply(encode_available)
+    #data['EXT_SOURCE_1_AV'] = data.EXT_SOURCE_1.apply(encode_available)
+    #data['EXT_SOURCE_2_AV'] = data.EXT_SOURCE_2.apply(encode_available)
+    #data['EXT_SOURCE_3_AV'] = data.EXT_SOURCE_3.apply(encode_available)
     
     # fill nas in EXT_SOURCE_* with 0
     data.EXT_SOURCE_1.fillna(0, inplace = True)
     data.EXT_SOURCE_2.fillna(0, inplace = True)
-    data.EXT_SOURCE_3.fillna(0, inplace = True)
+    data.EXT_SOURCE_3.fillna(0, inplace = True)    
     
-    # Recode 0 / 1 to N / Y
-    #data.FLAG_MOBIL.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_EMP_PHONE.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_WORK_PHONE.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_CONT_MOBILE.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_PHONE.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_EMAIL.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.REG_REGION_NOT_LIVE_REGION.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.REG_REGION_NOT_WORK_REGION.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.LIVE_REGION_NOT_WORK_REGION.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.REG_CITY_NOT_LIVE_CITY.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.REG_CITY_NOT_WORK_CITY.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.LIVE_CITY_NOT_WORK_CITY.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-
-    #data.FLAG_DOCUMENT_2.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_3.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_4.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_5.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_6.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_7.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_8.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_9.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_10.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_11.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_12.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_13.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_14.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_15.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_16.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_17.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_18.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_19.replace(to_replace = {'0':'N','1':'Y'},inplace = True)
-    #data.FLAG_DOCUMENT_20.replace(to_replace = {'0':'N','1':'Y'}, inplace = True)
-    #data.FLAG_DOCUMENT_21.replace(to_replace = {'0':'N','1':'Y'}, inplace = True)
+    # reducing large numbers of categories
+    
+    #data['cnt_child'] = data.CNT_CHILDREN.apply(cnt_child).astype('category')
+    #data['cnt_family'] = data.CNT_FAM_MEMBERS.apply(cnt_family).astype('category')
 
     # convert nominal / ordinal variables to categories
     data.CODE_GENDER.replace(to_replace = {'M':0,'F':1}, inplace = True)
@@ -270,6 +273,7 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
     data['CREDIT_INCOME_RATIO'] = data.AMT_CREDIT / data.AMT_INCOME_TOTAL
     data['ANNUITY_INCOME_RATIO'] = data.AMT_ANNUITY / data.AMT_INCOME_TOTAL
     data['PERCENT_EMPLOYED_TO_AGE'] = data.DAYS_EMPLOYED / data.DAYS_BIRTH
+    data['CREDIT_LENGTH'] = data.AMT_CREDIT / data.AMT_ANNUITY
 
     # just set the NAs in OWN_CAR_AGE to 0 because it will be used as an interaction only
     data.OWN_CAR_AGE = data.OWN_CAR_AGE.fillna(0)
@@ -382,6 +386,10 @@ def load_bureau(path: str = './bureau.csv') -> DataFrame:
                 'DAYS_CREDIT_UPDATE',
                 'AMT_ANNUITY'
                ]
+    
+    # reducing the number of categories
+    data['credit_active'] = data.CREDIT_ACTIVE.apply(credit_active).astype('category')
+    data['loan_cnt'] = data.LOAN_COUNT.apply(loan_count).astype('category')
     # fill all missing data with 0
     bureau[numerics] = bureau[numerics].fillna(0)
     
@@ -416,7 +424,7 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
        'AMT_CREDIT_SUM_OVERDUE', 'CREDIT_TYPE', 'DAYS_CREDIT_UPDATE',
        'AMT_ANNUITY'], axis = 1, inplace = True)
     # merging data
-    newFeatures = loanCounts.merge(active_accounts, on = 'SK_ID_CURR', how = 'left') 
+    data_bureau = loanCounts.merge(active_accounts, on = 'SK_ID_CURR', how = 'left') 
     
     # collect important sums for active credit accounts only   
     sums = activeAccounts.groupby('SK_ID_CURR').sum()
@@ -425,9 +433,13 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
                       'CNT_CREDIT_PROLONG','AMT_ANNUITY', 'AMT_CREDIT_MAX_OVERDUE', 'DAYS_CREDIT_UPDATE'],
              axis = 1, inplace = True)
     #merging data
-    newFeatures = newFeatures.merge(sums, on = 'SK_ID_CURR', how = 'left')
-    # filling any NaNs created
-    #newFeatures = newFeatures.fillna(0)
+    data_bureau = newFeatures.merge(sums, on = 'SK_ID_CURR', how = 'left')
+    
+    # number of different loan types
+    grp = bureau[['SK_ID_CURR', 'CREDIT_TYPE']].groupby(by = ['SK_ID_CURR'])['CREDIT_TYPE'].nunique().reset_index().rename(columns={'CREDIT_TYPE': 'BUREAU_LOAN_TYPES'})
+    # merge with data_bureau
+    data_bureau = data_bureau.merge(grp, on='SK_ID_CURR', how='left')
+    
     
     return newFeatures
 
