@@ -173,7 +173,16 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
     data.EXT_SOURCE_1.fillna(0, inplace = True)
     data.EXT_SOURCE_2.fillna(0, inplace = True)
     data.EXT_SOURCE_3.fillna(0, inplace = True)    
-    
+#############################################################################################################################
+#############################################################################################################################
+#############################################################################################################################
+##                                                                                                                         ##
+### NOTE: we will run read clean data without imputing external source 2 so we can get more accurate regression precision  ##
+###    data.EXT_SOURCE_2.fillna(0, inplace = True)                                                                         ##
+##                                                                                                                         ##
+#############################################################################################################################
+#############################################################################################################################
+#############################################################################################################################  
     # reducing large numbers of categories
     
     #data['cnt_child'] = data.CNT_CHILDREN.apply(cnt_child).astype('category')
@@ -186,37 +195,9 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
         data.CODE_GENDER = data.CODE_GENDER.fillna(get_mode(data.CODE_GENDER.dropna()))
         # cannot be set to int if np.nan exist
         data.CODE_GENDER = data.CODE_GENDER.astype('int')
-    #data.CODE_GENDER = data.CODE_GENDER.astype('category')
-
-    #data.NAME_CONTRACT_TYPE = data.NAME_CONTRACT_TYPE.astype('category')
-    #data.FLAG_OWN_CAR = data.FLAG_OWN_CAR.astype('category')
-    #data.FLAG_OWN_REALTY = data.FLAG_OWN_REALTY.astype('category')
-    #data.CNT_CHILDREN = data.CNT_CHILDREN.astype('category').cat.reorder_categories([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,12, 14, 19])
     # impute NAME_TYPE_SUITE with the mode
     if preimpute:
         data.NAME_TYPE_SUITE = data.NAME_TYPE_SUITE.fillna(get_mode(data.NAME_TYPE_SUITE.dropna()))
-    #data.NAME_TYPE_SUITE = data.NAME_TYPE_SUITE.astype('category')
-    
-    #data.NAME_INCOME_TYPE = data.NAME_INCOME_TYPE.astype('category')
-    #data.NAME_EDUCATION_TYPE = data.NAME_EDUCATION_TYPE.astype('category')
-    #data.NAME_FAMILY_STATUS = data.NAME_FAMILY_STATUS.astype('category')
-    #data.NAME_HOUSING_TYPE = data.NAME_HOUSING_TYPE.astype('category')
-    #data.FLAG_MOBIL = data.FLAG_MOBIL.astype('category')
-    #data.FLAG_EMP_PHONE = data.FLAG_EMP_PHONE.astype('category')
-    #data.FLAG_WORK_PHONE = data.FLAG_WORK_PHONE.astype('category')
-    #data.FLAG_CONT_MOBILE = data.FLAG_CONT_MOBILE.astype('category')
-    #data.FLAG_PHONE = data.FLAG_PHONE.astype('category')
-    #data.FLAG_EMAIL = data.FLAG_EMAIL.astype('category')
-    #data.WEEKDAY_APPR_PROCESS_START = data.WEEKDAY_APPR_PROCESS_START.astype('category')
-
-    #data.HOUR_APPR_PROCESS_START = data.HOUR_APPR_PROCESS_START.astype('category')
-    #data.REG_REGION_NOT_LIVE_REGION = data.REG_REGION_NOT_LIVE_REGION.astype('category')
-    #data.REG_REGION_NOT_LIVE_REGION = data.REG_REGION_NOT_LIVE_REGION.astype('category')
-    #data.REG_REGION_NOT_WORK_REGION = data.REG_REGION_NOT_WORK_REGION.astype('category')
-    #data.LIVE_REGION_NOT_WORK_REGION = data.LIVE_REGION_NOT_WORK_REGION.astype('category')
-    #data.REG_CITY_NOT_LIVE_CITY = data.REG_CITY_NOT_LIVE_CITY.astype('category')
-    #data.REG_CITY_NOT_WORK_CITY = data.REG_CITY_NOT_WORK_CITY.astype('category')
-    #data.LIVE_CITY_NOT_WORK_CITY = data.LIVE_CITY_NOT_WORK_CITY.astype('category')
 
     # set ORGANIZATION_TYPE NAs to 'None' (not associated employer) and make categorical
     data.ORGANIZATION_TYPE = data.ORGANIZATION_TYPE.fillna('None')
@@ -224,28 +205,6 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
     
     # set missing values in OCCUPATION_TYPE to unknown as it wasn't provided by the client
     data.OCCUPATION_TYPE = data.apply(fill_occupation_type, axis = 1)
-    #data.OCCUPATION_TYPE = data.OCCUPATION_TYPE.astype('category')
-    
-    #data.FLAG_DOCUMENT_2 = data.FLAG_DOCUMENT_2.astype('category')
-    #data.FLAG_DOCUMENT_3 = data.FLAG_DOCUMENT_3.astype('category')
-    #data.FLAG_DOCUMENT_4 = data.FLAG_DOCUMENT_4.astype('category')
-    #data.FLAG_DOCUMENT_5 = data.FLAG_DOCUMENT_5.astype('category')
-    #data.FLAG_DOCUMENT_6 = data.FLAG_DOCUMENT_6.astype('category')
-    #data.FLAG_DOCUMENT_7 = data.FLAG_DOCUMENT_7.astype('category')
-    #data.FLAG_DOCUMENT_8 = data.FLAG_DOCUMENT_8.astype('category')
-    #data.FLAG_DOCUMENT_9 = data.FLAG_DOCUMENT_9.astype('category')
-    #data.FLAG_DOCUMENT_10 = data.FLAG_DOCUMENT_10.astype('category')
-    #data.FLAG_DOCUMENT_11 = data.FLAG_DOCUMENT_11.astype('category')
-    #data.FLAG_DOCUMENT_12 = data.FLAG_DOCUMENT_12.astype('category')
-    #data.FLAG_DOCUMENT_13 = data.FLAG_DOCUMENT_13.astype('category')
-    #data.FLAG_DOCUMENT_14 = data.FLAG_DOCUMENT_14.astype('category')
-    #data.FLAG_DOCUMENT_15 = data.FLAG_DOCUMENT_15.astype('category')
-    #data.FLAG_DOCUMENT_16 = data.FLAG_DOCUMENT_16.astype('category')
-    #data.FLAG_DOCUMENT_17 = data.FLAG_DOCUMENT_17.astype('category')
-    #data.FLAG_DOCUMENT_18 = data.FLAG_DOCUMENT_18.astype('category')
-    #data.FLAG_DOCUMENT_19 = data.FLAG_DOCUMENT_19.astype('category')
-    #data.FLAG_DOCUMENT_20 = data.FLAG_DOCUMENT_20.astype('category')
-    #data.FLAG_DOCUMENT_21 = data.FLAG_DOCUMENT_21.astype('category')
 
     # we will treat missing credit enquiries as no enquiry has occured
     data.AMT_REQ_CREDIT_BUREAU_HOUR =data.AMT_REQ_CREDIT_BUREAU_HOUR.fillna(0).astype(np.uint16)
@@ -265,9 +224,6 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
     # impute CNT_FAM_MEMBERS with the mode
     if preimpute:
         data.CNT_FAM_MEMBERS = data.CNT_FAM_MEMBERS.fillna(get_mode(data.CNT_FAM_MEMBERS.dropna()))
-    #data.CNT_FAM_MEMBERS = data.CNT_FAM_MEMBERS.astype('category').cat.reorder_categories([ 1.,  2.,  3.,  4.,  5.,  6., 7.,8.,  9., 10., 11., 12., 13., 14.,15., 16., 20.])
-    #data.REGION_RATING_CLIENT = data.REGION_RATING_CLIENT.astype('category').cat.reorder_categories([1, 2, 3])
-    #data.REGION_RATING_CLIENT_W_CITY = data.REGION_RATING_CLIENT_W_CITY.astype('category').cat.reorder_categories([1, 2, 3])
 
     # create new features
     data['CREDIT_INCOME_RATIO'] = data.AMT_CREDIT / data.AMT_INCOME_TOTAL
