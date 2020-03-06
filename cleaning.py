@@ -11,6 +11,7 @@ import pandas as pd
 from numpy import ndarray
 from pandas import Series
 from pandas import DataFrame
+from sklearn.preprocessing import LabelEncoder
 
 def fill_occupation_type(df: DataFrame) -> Series:
     """Fill NAs in occupation type
@@ -184,9 +185,10 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
 #############################################################################################################################
 #############################################################################################################################  
     # reducing large numbers of categories
-    
-    #data['cnt_child'] = data.CNT_CHILDREN.apply(cnt_child).astype('category')
-    #data['cnt_family'] = data.CNT_FAM_MEMBERS.apply(cnt_family).astype('category')
+    data['cnt_child'] = data.CNT_CHILDREN.apply(cnt_child).astype('object')
+    data['cnt_family'] = data.CNT_FAM_MEMBERS.apply(cnt_family).astype('object')
+    # dropping features with large numberso of mostly empty categories
+    data = data.drop(labels = ['CNT_CHILDREN', 'CNT_FAM_MEMBERS'], axis = 1)
 
     # convert nominal / ordinal variables to categories
     data.CODE_GENDER.replace(to_replace = {'M':0,'F':1}, inplace = True)
@@ -215,11 +217,14 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
     data.AMT_REQ_CREDIT_BUREAU_YEAR = data.AMT_REQ_CREDIT_BUREAU_YEAR.fillna(0).astype(np.uint16)
     
     #label encoding
-    categorical_columns = []
+    categorical_columns = [col for col in data.columns if data[col].dtype == 'object']
+    lbl = LabelEncoder()
+    for col in categorical_columns:
+        data[col] = lbl.fit_transform(data[col].astype(str))
 
     # impute CNT_FAM_MEMBERS with the mode
     if preimpute:
-        data.CNT_FAM_MEMBERS = data.CNT_FAM_MEMBERS.fillna(get_mode(data.CNT_FAM_MEMBERS.dropna()))
+        data.cnt_family = data.cnt_family.fillna(get_mode(data.cnt_family.dropna()))
 
     # create new features
     data['CREDIT_INCOME_RATIO'] = data.AMT_CREDIT / data.AMT_INCOME_TOTAL
@@ -397,6 +402,7 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
 
 def merge_bureau(df):
     df = df.copy(deep=True)
+    bureau = pd.read_csv('bureau.csv')
     
     # Combining numerical features
     grp = bureau.drop(['SK_ID_BUREAU'], axis = 1).groupby(
@@ -419,8 +425,7 @@ def merge_bureau(df):
     data_bureau = data_bureau.merge(grp, on='SK_ID_CURR', how='left')
     data_bureau['BUREAU_LOAN_COUNT'] = data_bureau['BUREAU_LOAN_COUNT'].fillna(0)
     # Number of types of past loans per customer 
-    grp = bureau[['SK_ID_CURR', 'CREDIT_TYPE']].groupby(
-        by = ['SK_ID_CURR'])['CREDIT_TYPE'].nunique().reset_index().rename(columns=={'CREDIT_TYPE': 'BUREAU_LOAN_TYPES'})
+    grp = bureau[['SK_ID_CURR', 'CREDIT_TYPE']].groupby(by = ['SK_ID_CURR'])['CREDIT_TYPE'].nunique().reset_index().rename(columns={'CREDIT_TYPE': 'BUREAU_LOAN_TYPES'})
     data_bureau = data_bureau.merge(grp, on='SK_ID_CURR', how='left')
     data_bureau['BUREAU_LOAN_TYPES'] = data_bureau['BUREAU_LOAN_TYPES'].fillna(0)
     # Debt over credit ratio 
@@ -441,7 +446,7 @@ def merge_bureau(df):
     bureau['AMT_CREDIT_SUM_DEBT'] = bureau['AMT_CREDIT_SUM_DEBT'].fillna(0)
     grp1 = bureau[['SK_ID_CURR','AMT_CREDIT_SUM_OVERDUE']].groupby(
         by=['SK_ID_CURR'])['AMT_CREDIT_SUM_OVERDUE'].sum().reset_index().rename(
-        olumns={'AMT_CREDIT_SUM_OVERDUE': 'TOTAL_CUSTOMER_OVERDUE'})
+        columns={'AMT_CREDIT_SUM_OVERDUE': 'TOTAL_CUSTOMER_OVERDUE'})
     grp2 = bureau[['SK_ID_CURR','AMT_CREDIT_SUM_DEBT']].groupby(
         by=['SK_ID_CURR'])['AMT_CREDIT_SUM_DEBT'].sum().reset_index().rename(
         columns={'AMT_CREDIT_SUM_DEBT':'TOTAL_CUSTOMER_DEBT'})
@@ -452,7 +457,7 @@ def merge_bureau(df):
     data_bureau['OVERDUE_DEBT_RATIO'] = data_bureau.replace([np.inf, -np.inf], 0)
     data_bureau['OVERDUE_DEBT_RATIO'] = pd.to_numeric(data_bureau['OVERDUE_DEBT_RATIO'], downcast='float')
     print('Dimensions after adding new features: ', data_bureau.shape)
-    return df
+    return data_bureau
 
 def merge_previous_application(df):
     df = df.copy(deep=True)
@@ -477,10 +482,10 @@ def merge_previous_application(df):
     data_bureau_prev = data_bureau_prev.merge(grp, on=['SK_ID_CURR'], how='left')
     data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
     print('Dimensions after adding previous_application: ', data_bureau_prev.shape)
-    return df    
+    return data_bureau_prev    
 
 def merge_POS_CASH(df):
-    df = df.copy(deept=True)
+    df = df.copy(deep=True)
     pos_cash = pd.read_csv('POS_CASH_balance.csv')
     # Combining numerical features
     grp = pos_cash.drop('SK_ID_PREV', axis =1).groupby(by=['SK_ID_CURR']).mean().reset_index()
@@ -496,7 +501,7 @@ def merge_POS_CASH(df):
     data_bureau_prev = data_bureau_prev.merge(grp, on=['SK_ID_CURR'], how='left')
     data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
     print('Dimensions after adding POS_CASH_balance: ', data_bureau_prev.shape)
-    return df      
+    return data_bureau_prev      
 
 def merge_installments(df):
     df = df.copy(deep=True)
@@ -508,9 +513,9 @@ def merge_installments(df):
     data_bureau_prev = df.merge(grp, on =['SK_ID_CURR'], how = 'left')
     data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
     print('Dimensions after adding installments: ', data_bureau_prev.shape)
-    return df  
+    return data_bureau_prev  
 
-def merge_credit_card(df):
+def merge_credit_card_balance(df):
     df = df.copy(deep=True)
     credit_card = pd.read_csv('credit_card_balance.csv')
     # Combining numerical features
@@ -527,10 +532,55 @@ def merge_credit_card(df):
     data_bureau_prev = data_bureau_prev.merge(grp, on=['SK_ID_CURR'], how='left')
     data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
     print('Dimensions after adding credit_card_balance: ', data_bureau_prev.shape)
-    return df    
+    return data_bureau_prev    
 
-
+# https://www.kaggle.com/gemartin/load-data-reduce-memory-usage
+def reduce_mem_usage(df):
+    """ iterate through all the columns of a dataframe and modify the data type
+        to reduce memory usage.        
+    """
+    start_mem = df.memory_usage().sum() / 1024**2
+    print('Memory usage of dataframe is {:.2f} MB'.format(start_mem))
     
+    for col in df.columns:
+        col_type = df[col].dtypes
+        
+        if col_type != object:
+            c_min = df[col].min()
+            c_max = df[col].max()
+            if str(col_type)[:3] == 'int':
+                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                    df[col] = df[col].astype(np.int8)
+                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                    df[col] = df[col].astype(np.int16)
+                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                    df[col] = df[col].astype(np.int32)
+                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                    df[col] = df[col].astype(np.int64)  
+            else:
+                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                    df[col] = df[col].astype(np.float16)
+                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    df[col] = df[col].astype(np.float32)
+                else:
+                    df[col] = df[col].astype(np.float64)
+        #else: df[col] = df[col].astype('category')
+
+    end_mem = df.memory_usage().sum() / 1024**2
+    print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
+    print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
+    
+    return df
+    
+def downsampling_strategy(df):
+    df = df.copy(deep=True)
+    random_state = 1
+    defaults = df.query('TARGET == 1')
+    nominal = df.query('TARGET == 0').sample(
+        n = np.round(0.5 * (defaults.TARGET.size / 0.5)).astype(int), random_state = random_state)
+    # join dataframes and shuffle
+    df = pd.concat([defaults, nominal]).sample(frac = 1, random_state = random_state)
+    return df
     
     
     
