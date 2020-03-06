@@ -214,12 +214,8 @@ def read_clean_data(path: str = './application_train.csv', preimpute: bool = Tru
     data.AMT_REQ_CREDIT_BUREAU_QRT = data.AMT_REQ_CREDIT_BUREAU_QRT.fillna(0).astype(np.uint16)
     data.AMT_REQ_CREDIT_BUREAU_YEAR = data.AMT_REQ_CREDIT_BUREAU_YEAR.fillna(0).astype(np.uint16)
     
-    #data.AMT_REQ_CREDIT_BUREAU_HOUR = data.AMT_REQ_CREDIT_BUREAU_HOUR.astype('category')
-    #data.AMT_REQ_CREDIT_BUREAU_DAY = data.AMT_REQ_CREDIT_BUREAU_DAY.astype('category')
-    #data.AMT_REQ_CREDIT_BUREAU_WEEK = data.AMT_REQ_CREDIT_BUREAU_WEEK.astype('category')
-    #data.AMT_REQ_CREDIT_BUREAU_MON = data.AMT_REQ_CREDIT_BUREAU_MON.astype('category')
-    #data.AMT_REQ_CREDIT_BUREAU_QRT = data.AMT_REQ_CREDIT_BUREAU_QRT.astype('category')
-    #data.AMT_REQ_CREDIT_BUREAU_YEAR = data.AMT_REQ_CREDIT_BUREAU_YEAR.astype('category')
+    #label encoding
+    categorical_columns = []
 
     # impute CNT_FAM_MEMBERS with the mode
     if preimpute:
@@ -399,16 +395,141 @@ def create_newFeatures(bureau: DataFrame) -> DataFrame:
     
     return newFeatures
 
-# define a function that merges newFeatures with application data
-def merge_newFeatures(df: DataFrame) -> DataFrame:
-    global newFeatures
-    df = df.merge(newFeatures, on = 'SK_ID_CURR', how = 'left')
-    #df = df.fillna(0)
+def merge_bureau(df):
+    df = df.copy(deep=True)
     
+    # Combining numerical features
+    grp = bureau.drop(['SK_ID_BUREAU'], axis = 1).groupby(
+        by=['SK_ID_CURR']).mean().reset_index()
+    grp.columns = ['BUREAU_'+column if column !='SK_ID_CURR' else column for column in grp.columns]
+    data_bureau = df.merge(grp, on='SK_ID_CURR', how='left')
+    data_bureau.update(data_bureau[grp.columns].fillna(0))
+    # Combining categorical features
+    bureau_categorical = pd.get_dummies(bureau.select_dtypes('object'))
+    bureau_categorical['SK_ID_CURR'] = bureau['SK_ID_CURR']
+    grp = bureau_categorical.groupby(by = ['SK_ID_CURR']).mean().reset_index()
+    grp.columns = ['BUREAU_'+column if column !='SK_ID_CURR' else column for column in grp.columns]
+    data_bureau = data_bureau.merge(grp, on='SK_ID_CURR', how='left')
+    data_bureau.update(data_bureau[grp.columns].fillna(0))
+    # Shape of application and bureau data combined
+    print('The shape application and bureau data combined:',data_bureau.shape)
+
+    # Number of past loans per customer
+    grp = bureau.groupby(by = ['SK_ID_CURR'])['SK_ID_BUREAU'].count().reset_index().rename(columns = {'SK_ID_BUREAU': 'BUREAU_LOAN_COUNT'})
+    data_bureau = data_bureau.merge(grp, on='SK_ID_CURR', how='left')
+    data_bureau['BUREAU_LOAN_COUNT'] = data_bureau['BUREAU_LOAN_COUNT'].fillna(0)
+    # Number of types of past loans per customer 
+    grp = bureau[['SK_ID_CURR', 'CREDIT_TYPE']].groupby(
+        by = ['SK_ID_CURR'])['CREDIT_TYPE'].nunique().reset_index().rename(columns=={'CREDIT_TYPE': 'BUREAU_LOAN_TYPES'})
+    data_bureau = data_bureau.merge(grp, on='SK_ID_CURR', how='left')
+    data_bureau['BUREAU_LOAN_TYPES'] = data_bureau['BUREAU_LOAN_TYPES'].fillna(0)
+    # Debt over credit ratio 
+    bureau['AMT_CREDIT_SUM'] = bureau['AMT_CREDIT_SUM'].fillna(0)
+    bureau['AMT_CREDIT_SUM_DEBT'] = bureau['AMT_CREDIT_SUM_DEBT'].fillna(0)
+    grp1 = bureau[['SK_ID_CURR','AMT_CREDIT_SUM']].groupby(
+        by=['SK_ID_CURR'])['AMT_CREDIT_SUM'].sum().reset_index().rename(columns={'AMT_CREDIT_SUM': 'TOTAL_CREDIT_SUM'})
+    grp2 = bureau[['SK_ID_CURR','AMT_CREDIT_SUM_DEBT']].groupby(
+        by=['SK_ID_CURR'])['AMT_CREDIT_SUM_DEBT'].sum().reset_index().rename(columns={'AMT_CREDIT_SUM_DEBT':'TOTAL_CREDIT_SUM_DEBT'})
+    grp1['DEBT_CREDIT_RATIO'] = grp2['TOTAL_CREDIT_SUM_DEBT']/grp1['TOTAL_CREDIT_SUM']
+    del grp1['TOTAL_CREDIT_SUM']
+    data_bureau = data_bureau.merge(grp1, on='SK_ID_CURR', how='left')
+    data_bureau['DEBT_CREDIT_RATIO'] = data_bureau['DEBT_CREDIT_RATIO'].fillna(0)
+    data_bureau['DEBT_CREDIT_RATIO'] = data_bureau.replace([np.inf, -np.inf], 0)
+    data_bureau['DEBT_CREDIT_RATIO'] = pd.to_numeric(data_bureau['DEBT_CREDIT_RATIO'], downcast='float')
+    # Overdue over debt ratio
+    bureau['AMT_CREDIT_SUM_OVERDUE'] = bureau['AMT_CREDIT_SUM_OVERDUE'].fillna(0)
+    bureau['AMT_CREDIT_SUM_DEBT'] = bureau['AMT_CREDIT_SUM_DEBT'].fillna(0)
+    grp1 = bureau[['SK_ID_CURR','AMT_CREDIT_SUM_OVERDUE']].groupby(
+        by=['SK_ID_CURR'])['AMT_CREDIT_SUM_OVERDUE'].sum().reset_index().rename(
+        olumns={'AMT_CREDIT_SUM_OVERDUE': 'TOTAL_CUSTOMER_OVERDUE'})
+    grp2 = bureau[['SK_ID_CURR','AMT_CREDIT_SUM_DEBT']].groupby(
+        by=['SK_ID_CURR'])['AMT_CREDIT_SUM_DEBT'].sum().reset_index().rename(
+        columns={'AMT_CREDIT_SUM_DEBT':'TOTAL_CUSTOMER_DEBT'})
+    grp1['OVERDUE_DEBT_RATIO'] = grp1['TOTAL_CUSTOMER_OVERDUE']/grp2['TOTAL_CUSTOMER_DEBT']
+    del grp1['TOTAL_CUSTOMER_OVERDUE']
+    data_bureau =data_bureau.merge(grp1, on='SK_ID_CURR', how='left')
+    data_bureau['OVERDUE_DEBT_RATIO'] = data_bureau['OVERDUE_DEBT_RATIO'].fillna(0)
+    data_bureau['OVERDUE_DEBT_RATIO'] = data_bureau.replace([np.inf, -np.inf], 0)
+    data_bureau['OVERDUE_DEBT_RATIO'] = pd.to_numeric(data_bureau['OVERDUE_DEBT_RATIO'], downcast='float')
+    print('Dimensions after adding new features: ', data_bureau.shape)
     return df
 
-    
-    
+def merge_previous_application(df):
+    df = df.copy(deep=True)
+    previous_application = pd.read_csv('previous_application.csv')
+    # Number of previous applications per customer
+    grp = previous_application[['SK_ID_CURR','SK_ID_PREV']].groupby(
+        by=['SK_ID_CURR'])['SK_ID_PREV'].count().reset_index().rename(columns={'SK_ID_PREV':'PREV_APP_COUNT'})
+    data_bureau_prev = df.merge(grp, on =['SK_ID_CURR'], how = 'left')
+    data_bureau_prev['PREV_APP_COUNT'] = data_bureau_prev['PREV_APP_COUNT'].fillna(0)
+    # Combining numerical features
+    grp = previous_application.drop('SK_ID_PREV', axis =1).groupby(by=['SK_ID_CURR']).mean().reset_index()
+    prev_columns = ['PREV_'+column if column != 'SK_ID_CURR' else column for column in grp.columns ]
+    grp.columns = prev_columns
+    data_bureau_prev = data_bureau_prev.merge(grp, on =['SK_ID_CURR'], how = 'left')
+    data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
+    # Combining categorical features
+    prev_categorical = pd.get_dummies(previous_application.select_dtypes('object'))
+    prev_categorical['SK_ID_CURR'] = previous_application['SK_ID_CURR']
+    prev_categorical.head()
+    grp = prev_categorical.groupby('SK_ID_CURR').mean().reset_index()
+    grp.columns = ['PREV_'+column if column != 'SK_ID_CURR' else column for column in grp.columns]
+    data_bureau_prev = data_bureau_prev.merge(grp, on=['SK_ID_CURR'], how='left')
+    data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
+    print('Dimensions after adding previous_application: ', data_bureau_prev.shape)
+    return df    
+
+def merge_POS_CASH(df):
+    df = df.copy(deept=True)
+    pos_cash = pd.read_csv('POS_CASH_balance.csv')
+    # Combining numerical features
+    grp = pos_cash.drop('SK_ID_PREV', axis =1).groupby(by=['SK_ID_CURR']).mean().reset_index()
+    prev_columns = ['POS_'+column if column != 'SK_ID_CURR' else column for column in grp.columns ]
+    grp.columns = prev_columns
+    data_bureau_prev = df.merge(grp, on =['SK_ID_CURR'], how = 'left')
+    data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
+    # Combining categorical features
+    pos_cash_categorical = pd.get_dummies(pos_cash.select_dtypes('object'))
+    pos_cash_categorical['SK_ID_CURR'] = pos_cash['SK_ID_CURR']
+    grp = pos_cash_categorical.groupby('SK_ID_CURR').mean().reset_index()
+    grp.columns = ['POS_'+column if column != 'SK_ID_CURR' else column for column in grp.columns]
+    data_bureau_prev = data_bureau_prev.merge(grp, on=['SK_ID_CURR'], how='left')
+    data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
+    print('Dimensions after adding POS_CASH_balance: ', data_bureau_prev.shape)
+    return df      
+
+def merge_installments(df):
+    df = df.copy(deep=True)
+    installments = pd.read_csv('installments_payments.csv')
+    # Combining numerical features and there are no categorical features in this dataset
+    grp = installments.drop('SK_ID_PREV', axis =1).groupby(by=['SK_ID_CURR']).mean().reset_index()
+    prev_columns = ['INSTA_'+column if column != 'SK_ID_CURR' else column for column in grp.columns ]
+    grp.columns = prev_columns
+    data_bureau_prev = df.merge(grp, on =['SK_ID_CURR'], how = 'left')
+    data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
+    print('Dimensions after adding installments: ', data_bureau_prev.shape)
+    return df  
+
+def merge_credit_card(df):
+    df = df.copy(deep=True)
+    credit_card = pd.read_csv('credit_card_balance.csv')
+    # Combining numerical features
+    grp = credit_card.drop('SK_ID_PREV', axis =1).groupby(by=['SK_ID_CURR']).mean().reset_index()
+    prev_columns = ['CREDIT_'+column if column != 'SK_ID_CURR' else column for column in grp.columns ]
+    grp.columns = prev_columns
+    data_bureau_prev = df.merge(grp, on =['SK_ID_CURR'], how = 'left')
+    data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
+    # Combining categorical features
+    credit_categorical = pd.get_dummies(credit_card.select_dtypes('object'))
+    credit_categorical['SK_ID_CURR'] = credit_card['SK_ID_CURR']
+    grp = credit_categorical.groupby('SK_ID_CURR').mean().reset_index()
+    grp.columns = ['CREDIT_'+column if column != 'SK_ID_CURR' else column for column in grp.columns]
+    data_bureau_prev = data_bureau_prev.merge(grp, on=['SK_ID_CURR'], how='left')
+    data_bureau_prev.update(data_bureau_prev[grp.columns].fillna(0))
+    print('Dimensions after adding credit_card_balance: ', data_bureau_prev.shape)
+    return df    
+
+
     
     
     
