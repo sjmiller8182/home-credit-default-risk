@@ -582,6 +582,125 @@ def downsampling_strategy(df):
     df = pd.concat([defaults, nominal]).sample(frac = 1, random_state = random_state)
     return df
     
+class ReduceVIF(BaseEstimator, TransformerMixin):
+    def __init__(self, thresh=5.0):
+        """Iteratively calculate VIF and drop features with highest VIF until
+        all VIF values are below the threshold value (`thresh`).
+        
+        Adapted from https://www.kaggle.com/ffisegydd/sklearn-multicollinearity-class
+        """
+        # From looking at documentation, values between 5 and 10 are "okay".
+        # Above 10 is too high and so should be removed.
+        self.thresh = thresh
+        
+        # The statsmodel function will fail with NaN values, as such we have to impute them.
+        # By default we impute using the median value.
+        # This imputation could be taken out and added as part of an sklearn Pipeline.
+
+    def fit(self, X, y=None):
+        print('ReduceVIF fit')
+        return self
+
+    def transform(self, X, y=None):
+        print('ReduceVIF transform')
+        columns = X.columns.tolist()
+        return ReduceVIF.calculate_vif(X, self.thresh)
+
+    @staticmethod
+    def calculate_vif(X, thresh):
+        # Taken from https://stats.stackexchange.com/a/253620/53565 and modified
+        dropped=True
+        while dropped:
+            variables = X.columns
+            dropped = False
+            vif = [variance_inflation_factor(X[variables].values, X.columns.get_loc(var)) for var in X.columns]
+            
+            max_vif = max(vif)
+            if max_vif > thresh:
+                maxloc = vif.index(max_vif)
+                print(f'Dropping {X.columns[maxloc]} with vif={max_vif}')
+                X = X.drop([X.columns.tolist()[maxloc]], axis=1)
+                dropped=True
+        return X
+    
+def drop_em(df):
+    df = df.copy(deep=True)
+    dropped = ['BUREAU_CREDIT_ACTIVE_Active', 'DEBT_CREDIT_RATIO',      
+  'PREV_NAME_CONTRACT_TYPE_Cash loans',      
+  'PREV_NAME_CONTRACT_TYPE_Consumer loans',     
+  'PREV_NAME_CONTRACT_TYPE_Revolving loans',      
+  'PREV_NAME_CONTRACT_TYPE_XNA',      
+  'PREV_WEEKDAY_APPR_PROCESS_START_FRIDAY',      
+  'PREV_FLAG_LAST_APPL_PER_CONTRACT_N',      
+  'PREV_NAME_CASH_LOAN_PURPOSE_Building a house or an annex',      
+  'PREV_NAME_CASH_LOAN_PURPOSE_XAP',      
+  'PREV_NAME_CONTRACT_STATUS_Approved',     
+  'PREV_NAME_CONTRACT_STATUS_Unused offer',      
+  'PREV_NAME_PAYMENT_TYPE_Cash through the bank',      
+  'PREV_CODE_REJECT_REASON_CLIENT',      
+  'PREV_NAME_CLIENT_TYPE_New',      
+  'PREV_NAME_GOODS_CATEGORY_Additional Service',      
+  'PREV_NAME_PORTFOLIO_Cards',      
+  'PREV_NAME_PORTFOLIO_Cars',      
+  'PREV_NAME_PORTFOLIO_Cash',      
+  'PREV_NAME_PORTFOLIO_XNA',      
+  'PREV_NAME_PRODUCT_TYPE_XNA',      
+  'PREV_CHANNEL_TYPE_AP+ (Cash loan)',      
+  'PREV_NAME_SELLER_INDUSTRY_Auto technology',      
+  'CREDIT_AMT_RECIVABLE',        
+  'PREV_NAME_PORTFOLIO_POS',        
+  'CREDIT_AMT_TOTAL_RECEIVABLE',        
+  'PREV_NAME_CONTRACT_STATUS_Refused',        
+  'CREDIT_AMT_RECEIVABLE_PRINCIPAL',        
+  'PREV_NAME_YIELD_GROUP_high',        
+  'EMPLOYED',        
+  'INSTA_DAYS_INSTALMENT',        
+  'PREV_NAME_GOODS_CATEGORY_XNA',        
+  'PREV_PRODUCT_COMBINATION_POS household with interest',        
+  'OBS_60_CNT_SOCIAL_CIRCLE',       
+  'PREV_NAME_CASH_LOAN_PURPOSE_XNA',        
+  'CREDIT_SK_DPD_DEF',       
+  'PREV_NAME_SELLER_INDUSTRY_XNA',       
+  'PREV_NFLAG_LAST_APPL_IN_DAY',     
+  'CREDIT_AMT_BALANCE',      
+  'PREV_CHANNEL_TYPE_Country-wide',   
+  'CREDIT_CNT_DRAWINGS_CURRENT',       
+  'PREV_AMT_APPLICATION',    
+  'PREV_CODE_REJECT_REASON_XAP',  
+  'PREV_NAME_PRODUCT_TYPE_x-sell', 
+  'PREV_NAME_GOODS_CATEGORY_Mobile', 
+  'INSTA_AMT_PAYMENT', 
+  'DAYS_EMPLOYED',
+  'POS_CNT_INSTALMENT', 
+  'PREV_FLAG_LAST_APPL_PER_CONTRACT_Y',
+  'AMT_CREDIT', 
+  'PREV_AMT_GOODS_PRICE',  
+  'CREDIT_AMT_DRAWINGS_CURRENT', 
+  'PREV_PRODUCT_COMBINATION_Cash', 
+  'CREDIT_INCOME_RATIO', 
+  'PREV_PRODUCT_COMBINATION_POS industry with interest', 
+  'FLAG_DOCUMENT_3', 
+  'PREV_NAME_SELLER_INDUSTRY_Connectivity',
+  'REGION_RATING_CLIENT', 
+  'PREV_DAYS_TERMINATION',
+  'PREV_NAME_GOODS_CATEGORY_Clothing and Accessories',
+  'POS_MONTHS_BALANCE',
+  'CREDIT_AMT_PAYMENT_TOTAL_CURRENT',
+  'REG_REGION_NOT_WORK_REGION',
+  'PREV_DAYS_FIRST_DRAWING',
+  'CREDIT_NAME_CONTRACT_STATUS_Active', 
+   'PREV_NAME_SELLER_INDUSTRY_Consumer electronics', 
+   'PREV_NAME_YIELD_GROUP_XNA', 
+   'PREV_AMT_CREDIT',
+   'REG_CITY_NOT_WORK_CITY', 
+   'PREV_NAME_PRODUCT_TYPE_walk-in',
+   'CREDIT_CNT_INSTALMENT_MATURE_CUM',
+   'BUREAU_DAYS_CREDIT',
+   'PREV_NAME_GOODS_CATEGORY_Furniture',
+   'PREV_DAYS_DECISION']
+    
+    data_slim = df.drop(labels = dropped, axis = 1)
+    return data_slim
     
     
     
