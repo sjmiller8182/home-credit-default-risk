@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import numpy as np
+
 from sklearn.manifold import TSNE
 
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -185,5 +187,5 @@ class AutoEncoder:
         sns.lineplot(np.arange(len(self.__hist.history['loss'])),
                      self.__hist.history['loss'])
         plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.title('Training Loss')
+        plt.ylabel('Mean Squared Error')
+        plt.title('Reconstruction Error')

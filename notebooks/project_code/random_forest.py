@@ -203,21 +203,27 @@ class TreeImportances:
                                     param_grid=self.params,
                                     scoring=self.scoring,
                                     cv=self.cv_size,
-                                    verbose=grid_verbose)
+                                    verbose=grid_verbose,
+                                    refit=False)
         else:
             searcher = RandomizedSearchCV(estimator=model,
                                           param_distributions=self.params,
                                           n_iter=self.n_iter,
                                           scoring=self.scoring,
                                           cv=self.cv_size,
-                                          verbose=grid_verbose)
+                                          verbose=grid_verbose,
+                                          refit=False)
         # get best model and parameters (set internal state)
         searcher.fit(X, y)
-        self.__best_model = searcher.best_estimator_
+        #self.__best_model = searcher.best_estimator_
         self.__best_parameters = searcher.best_params_
+        
         if self.verbose > 0:
             print(f"The best score from searching is {searcher.best_score_:.4f}.")
 
+        # destroy search object to free up memory
+        del searcher
+            
         # get tuned params and/or params to serialize into models
         tuned_settings = self._arrange_params(self.__best_parameters,
                                               RF_PARAMETERS,
@@ -249,8 +255,8 @@ class TreeImportances:
         
         
         # create dataframe header
-        columns_splits = np.char.add(np.repeat('split_', self.cv_size),
-                                     np.arange(0,self.cv_size,1).astype(str))
+        columns_splits = np.char.add(np.repeat('split_', self.importance_estimators),
+                                     np.arange(0, self.importance_estimators, 1).astype(str))
         
         # create dataframe of feature importances
         df_temp = pd.DataFrame(importances, columns=columns_splits)
