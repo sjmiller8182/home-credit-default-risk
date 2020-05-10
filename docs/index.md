@@ -36,5 +36,5 @@ installments_payments.csv | 8
 credit_card_balance.csv | 23
 previous_application.csv | 37
 
-test this link [test this link](../html/MiniLab2_CRISP-DM.html)
+test this link [test this link](./html/Lab2_CRISP-DM.html)
 
