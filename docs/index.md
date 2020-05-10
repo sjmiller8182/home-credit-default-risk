@@ -35,3 +35,5 @@ POS_CASH_balance.csv | 8
 installments_payments.csv | 8
 credit_card_balance.csv | 23
 previous_application.csv | 37
+
+[test this link](../html/MiniLab1 CRISP-DM .html)
