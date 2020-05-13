@@ -22,7 +22,7 @@ The data was provided by Home Credit and is
 The dataset consists of 307,511 individual loans. 
 For the purpose of this assignment, 
  the analysis will be limited to the initial training and test sets, 
- with the addition of three engineered features obtained from the bureau.csv file and labeled ```newFeatures.csv``` .
+ with the addition of three engineered features obtained from the bureau.csv.
 
 Data Table | Number of Features
 ------------ | -------------
@@ -36,9 +36,5 @@ installments_payments.csv | 8
 credit_card_balance.csv | 23
 previous_application.csv | 37
 
-test this link [test this link](./html/Lab2_CRISP-DM.html)
 
-test this image 
-
-<img src="./img/crisps-dm3.png">
 

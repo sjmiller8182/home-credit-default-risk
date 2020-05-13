@@ -13130,7 +13130,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><img src="../_images/crisps-dm3.png" style="width:550px;height:450px"/></p>
+<p><img src="../img/crisps-dm3.png" style="width:550px;height:450px"/></p>
 
 </div>
 </div>
@@ -15601,7 +15601,7 @@ Weighted F1 score was used as the classification metric.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><img src="../_images/TreeImportances.png" alt=""></p>
+<p><img src="../img/TreeImportances.png" alt=""></p>
 
 </div>
 </div>
@@ -18023,7 +18023,7 @@ This cluster does not appear to be useful.</p>
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="4.1-Next-Stage-Deployment">4.1 Next Stage Deployment<a class="anchor-link" href="#4.1-Next-Stage-Deployment">&#182;</a></h2><p>The next stage in the CRISP-DM is deployment. After model building and evaluation, we are ready to create the model in H2O which will allow us to save the model as a MOJO (Model Object, Optimized) binary. H2O allows you to convert models that you build to MOJOs, which can then be deployed for scoring in real time.The "download_mojo()" function saves the model as a zip file. You can unzip the file to view the options used to build the file along with each tree built in the model. Note that each tree file is saved as a binary file type. This MOJO zip allows us to deploy our code representation of the model into a production environment and solve our original business problem. The diagram below represents the flow for the training and deployment of our model.</p>
-<p><img src="../_images/MachineLearning-Lab3_System.png" style="width:800px;height:375px"/></p>
+<p><img src="../img/MachineLearning-Lab3_System.png" style="width:800px;height:375px"/></p>
 <h4 id="How-useful-is-your-model-for-interested-parties?">How useful is your model for interested parties?<a class="anchor" id="Useful" /><a class="anchor-link" href="#How-useful-is-your-model-for-interested-parties?">&#182;</a></h4><p>We believe this model would be useful for loan departments loan evaluators. This is contingent of discovering how some of the external variables are created. With this and some additional consistancy in top scoring features we could improve the accuracy</p>
 <h4 id="How-would-you-measure-the-model's-value-if-it-was-used-by-these-parties?">How would you measure the model's value if it was used by these parties?<a class="anchor" id="Value" /><a class="anchor-link" href="#How-would-you-measure-the-model's-value-if-it-was-used-by-these-parties?">&#182;</a></h4><p>This model should be tested in parrellel to present evaluation proceess. Then after a set period of time compare human evaluation to model based accuracy. If the results were the same, the minimum resulting savings would be the salaries of the loan evaluators. Added value would result from the acceleration of the loan approval process.</p>
 <h4 id="How-would-your-deploy-your-model-for-interested-parties?">How would your deploy your model for interested parties?<a class="anchor" id="Deploy" /><a class="anchor-link" href="#How-would-your-deploy-your-model-for-interested-parties?">&#182;</a></h4><p>Our MOJO zip file will be sent to the loan approval department. During the loan approval, the preporcessed collected data be digested by our deployed compiled model.</p>
