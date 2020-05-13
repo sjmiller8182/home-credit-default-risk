@@ -38,3 +38,7 @@ previous_application.csv | 37
 
 test this link [test this link](./html/Lab2_CRISP-DM.html)
 
+test this image 
+
+<img src="./_images/crisps-dm3.png" alt="Italian Trulli">
+
