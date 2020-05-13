@@ -40,5 +40,5 @@ test this link [test this link](./html/Lab2_CRISP-DM.html)
 
 test this image 
 
-<img src="./_images/crisps-dm3.png" alt="Italian Trulli">
+<img src="./img/crisps-dm3.png">
 
