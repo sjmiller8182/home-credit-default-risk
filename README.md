@@ -63,7 +63,7 @@ Explored the data to understand the type of features and the relationships betwe
 
 **Full Reports**
 
-* [Report (html)](./html/MiniLab1 CRISP-DM .html)
+* [Report (html)](./html/MiniLab1 CRISP-DM\ .html)
 * [NoteBook](./notebooks/MiniLab1_CRISP-DM.ipynb)
 
 ### Predictive Modeling
