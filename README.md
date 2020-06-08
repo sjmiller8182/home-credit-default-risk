@@ -83,5 +83,14 @@ Explored the data to understand the type of features and the relationships betwe
 
 [Report: Lab3 CRISP-DM](./notebooks/Lab3_CRISP-DM.ipynb): Notebook for clustering and segmentation.
 
-## Conclusion
+## Main Conclusions
 
+### Predictive Modeling
+
+* We were able to create a list of important features.
+* We developed a logistic model with AUC of 0.76. This model did not show evidence of over fitting.
+
+### Clustering and Segmentation
+
+* We were able to create 8 well defined clusters, which can be easily interpreted.
+* We were also able to develop a model to classify new customers into the clusters with reasonable AUC.
