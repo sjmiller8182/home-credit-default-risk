@@ -76,7 +76,12 @@ Explored the data to understand the type of features and the relationships betwe
 
 ### Clustering Analysis and Segmentation
 
+* Evaluated several methods for dimensionality reduction.
+* Reduced the 300+ dimensions to 2 dimensions with an autoencoder.
+* Clustered on the reduced dimension set.
+* Provided an interpretation of the cluster.
 
+[Report: Lab3 CRISP-DM](./notebooks/Lab3_CRISP-DM.ipynb): Notebook for clustering and segmentation.
 
 ## Conclusion
 
