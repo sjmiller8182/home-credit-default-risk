@@ -61,10 +61,7 @@ Explored the data to understand the type of features and the relationships betwe
 * Reported interesting features from univariate and multivariate analyses.
 * Engineered new features from understanding of given features.
 
-**Full Reports**
-
-* [Report (html)](./html/MiniLab1 CRISP-DM\ .html)
-* [NoteBook](./notebooks/MiniLab1_CRISP-DM.ipynb)
+[Report: MiniLab1 CRISP-DM](./notebooks/MiniLab1_CRISP-DM.ipynb): Notebook for data exploration phase.
 
 ### Predictive Modeling
 
