@@ -54,9 +54,25 @@ This project is broken into three main sections
 
 ### Data Exploration
 
+Explored the data to understand the type of features and the relationships between features.
+
+* Provided detailed description of the features and assessed data types.
+* Assessed missing values and removed features with too much data corruption.
+* Reported interesting features from univariate and multivariate analyses.
+* Engineered new features from understanding of given features.
+
+**Full Reports**
+
+* [Report (html)](./html/MiniLab1 CRISP-DM .html)
+* [NoteBook](./notebooks/MiniLab1_CRISP-DM.ipynb)
+
 ### Predictive Modeling
 
+
+
 ### Clustering Analysis and Segmentation
+
+
 
 ## Conclusion
 
