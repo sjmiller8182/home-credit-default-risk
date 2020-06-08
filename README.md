@@ -65,7 +65,14 @@ Explored the data to understand the type of features and the relationships betwe
 
 ### Predictive Modeling
 
+* Assessed importance of features with logistic regression and random forests.
+* Created three models for predicting loan defaults.
+* Tuned model hyperparameters to improve performance.
+* Assessed model performances and selected the best model for the application.
+* Created and tuned three models for a regression task (secondary objective).
+* Provided a model deployment plan.
 
+[Report: MiniLab2 CRISP-DM](./notebooks/MiniLab2_CRISP-DM.ipynb): Notebook for predictive model development.
 
 ### Clustering Analysis and Segmentation
 
