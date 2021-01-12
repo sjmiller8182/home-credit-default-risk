@@ -1,2 +1,4 @@
 # override linguist - ignore documentation
-*.html linguist-documentation
+*.ipynb linguist-language=Python
+*.python linguist-detectable=true
+*.html linguist-detectable=false
